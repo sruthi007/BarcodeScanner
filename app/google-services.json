@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "956135352374",
+    "project_id": "sruthis-barcode-scanner",
+    "storage_bucket": "sruthis-barcode-scanner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956135352374:android:2f55526fd60377a3b15097",
+        "android_client_info": {
+          "package_name": "com.example.mybarcodescanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB0QZUfT-BmO3zmmPrlKhXEv3vRGTR69s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
