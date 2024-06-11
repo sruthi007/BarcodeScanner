@@ -20,4 +20,20 @@
         android:layout_height="wrap_content"
         android:text="Item Name"
         android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+
+    <TextView
+        android:id="@+id/textMfdDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MFD"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        android:paddingTop="4dp" />
+
+    <TextView
+        android:id="@+id/textExpiryDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="EXP"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        android:paddingTop="4dp" />
 </LinearLayout>
