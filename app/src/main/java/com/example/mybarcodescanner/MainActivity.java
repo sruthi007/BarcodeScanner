@@ -243,6 +243,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Handle back button press to navigate to home page
+    @Override
+    public void onBackPressed() {
+        if (binding.recyclerView.getVisibility() == View.VISIBLE) {
+            // If the RecyclerView is visible, return to the home screen (initial state)
+            binding.recyclerView.setVisibility(View.GONE);
+            binding.layoutResult.setVisibility(View.VISIBLE);
+        } else {
+            // Otherwise, call the superclass method to handle the default back press
+            super.onBackPressed();
+        }
+    }
+
     // Interface for date set listener
     private interface OnDateSetListener {
         void onDateSet(LocalDate date);
