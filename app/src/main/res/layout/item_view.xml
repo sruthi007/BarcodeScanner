@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground"
+    android:foreground="?attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/textBarcode"
@@ -12,6 +14,7 @@
         android:layout_height="wrap_content"
         android:text="Barcode"
         android:textAppearance="?android:attr/textAppearanceListItem"
+        android:textColor="@color/colorPrimary"
         android:paddingBottom="4dp" />
 
     <TextView
@@ -19,7 +22,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Item Name"
-        android:textAppearance="?android:attr/textAppearanceListItemSmall" />
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        android:textColor="@color/colorAccent" />
 
     <TextView
         android:id="@+id/textMfdDate"
@@ -27,7 +31,8 @@
         android:layout_height="wrap_content"
         android:text="MFD"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        android:paddingTop="4dp" />
+        android:paddingTop="4dp"
+        android:textColor="@color/colorPrimary" />
 
     <TextView
         android:id="@+id/textExpiryDate"
@@ -35,5 +40,6 @@
         android:layout_height="wrap_content"
         android:text="EXP"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        android:paddingTop="4dp" />
+        android:paddingTop="4dp"
+        android:textColor="@color/colorAccent" />
 </LinearLayout>

@@ -7,11 +7,8 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -59,6 +56,19 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         initFirestore();
         initRecyclerView();
+
+        // Handle button clicks
+        binding.btnAddItem.setOnClickListener(v -> {
+            currentAction = "add";
+            checkPermissionAndActivity();
+        });
+
+        binding.btnDeleteItem.setOnClickListener(v -> {
+            currentAction = "delete";
+            checkPermissionAndActivity();
+        });
+
+        binding.btnShowItems.setOnClickListener(v -> loadItems());
     }
 
     private void initBinding() {
@@ -67,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        binding.fab.setOnClickListener(this::showPopupMenu);
+        // You can remove the FAB if not needed
+        binding.fab.setOnClickListener(v -> showCamera());
     }
 
     private void initFirestore() {
@@ -79,31 +90,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         itemAdapter = new ItemAdapter(itemList);
         recyclerView.setAdapter(itemAdapter);
-    }
-
-    private void showPopupMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.menu_main, popup.getMenu());
-        popup.setOnMenuItemClickListener(this::onMenuItemClick);
-        popup.show();
-    }
-
-    private boolean onMenuItemClick(MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_add) {
-            currentAction = "add";
-            checkPermissionAndActivity();
-            return true;
-        } else if (itemId == R.id.action_delete) {
-            currentAction = "delete";
-            checkPermissionAndActivity();
-            return true;
-        } else if (itemId == R.id.action_show) {
-            loadItems();
-            return true;
-        }
-        return false;
     }
 
     private void checkPermissionAndActivity() {
@@ -202,6 +188,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadItems() {
+        // Hide action buttons and text when showing items
+        binding.layoutAddItem.setVisibility(View.GONE);
+        binding.layoutDeleteItem.setVisibility(View.GONE);
+        binding.layoutShowItems.setVisibility(View.GONE);
+
         binding.recyclerView.setVisibility(View.VISIBLE);
         binding.layoutResult.setVisibility(View.GONE);
 
@@ -250,6 +241,11 @@ public class MainActivity extends AppCompatActivity {
             // If the RecyclerView is visible, return to the home screen (initial state)
             binding.recyclerView.setVisibility(View.GONE);
             binding.layoutResult.setVisibility(View.VISIBLE);
+
+            // Show action buttons and text again
+            binding.layoutAddItem.setVisibility(View.VISIBLE);
+            binding.layoutDeleteItem.setVisibility(View.VISIBLE);
+            binding.layoutShowItems.setVisibility(View.VISIBLE);
         } else {
             // Otherwise, call the superclass method to handle the default back press
             super.onBackPressed();
