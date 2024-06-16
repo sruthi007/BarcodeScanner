@@ -13,12 +13,16 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mybarcodescanner.databinding.ActivityMainBinding;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -40,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     private ItemAdapter itemAdapter;
     private LocalDate mfdDate;
     private LocalDate expiryDate;
+    private BadgeDrawable badgeDrawable;
+    private List<Item> expiringItems = new ArrayList<>();
 
     // ActivityResultLauncher for requesting camera permission
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -69,6 +75,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.btnShowItems.setOnClickListener(v -> loadItems());
+
+        // Set up the Floating Action Button
+        binding.fab.setOnClickListener(v -> showExpiringItemsDialog());
+
+        // Initialize badge drawable
+        badgeDrawable = BadgeDrawable.create(this);
+        badgeDrawable.setBadgeGravity(BadgeDrawable.TOP_END);
+        badgeDrawable.setMaxCharacterCount(3); // Adjust as needed for larger numbers
+        badgeDrawable.setHorizontalOffset(20);
+        badgeDrawable.setVerticalOffset(20);
+        badgeDrawable.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
+        binding.fab.post(() -> BadgeUtils.attachBadgeDrawable(badgeDrawable, binding.fab));
+
+        // Update the notification badge
+        updateNotificationBadge();
     }
 
     private void initBinding() {
@@ -169,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").document(barcode).set(newItem)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Item added", Toast.LENGTH_SHORT).show();
+                    updateNotificationBadge(); // Update the notification badge
                     loadItems(); // Optionally refresh the list immediately after adding an item
                 })
                 .addOnFailureListener(e -> {
@@ -180,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").document(barcode).delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show();
+                    updateNotificationBadge(); // Update the notification badge
                     loadItems(); // Optionally refresh the list immediately after deleting an item
                 })
                 .addOnFailureListener(e -> {
@@ -209,11 +232,62 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         itemAdapter.notifyDataSetChanged();
+                        updateNotificationBadge(); // Update the notification badge
                     } else {
                         Log.e(TAG, "Error getting items: ", task.getException());
                         Toast.makeText(this, "Error getting items", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void updateNotificationBadge() {
+        db.collection("items").get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        expiringItems.clear();
+                        int expiryCount = 0;
+                        LocalDate today = LocalDate.now();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Item item = document.toObject(Item.class);
+                            if (item != null && item.getExpiryDate() != null) {
+                                LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
+                                if (expiryDate.isBefore(today) || expiryDate.equals(today) || expiryDate.isBefore(today.plusDays(7))) {
+                                    expiringItems.add(item);
+                                    expiryCount++;
+                                }
+                            }
+                        }
+                        if (expiryCount > 0) {
+                            badgeDrawable.setNumber(expiryCount);
+                            badgeDrawable.setVisible(true);
+                        } else {
+                            badgeDrawable.setVisible(false);
+                        }
+                    }
+                });
+    }
+
+    private void showExpiringItemsDialog() {
+        if (expiringItems.isEmpty()) {
+            Toast.makeText(this, "No items expiring soon.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StringBuilder message = new StringBuilder();
+        for (Item item : expiringItems) {
+            message.append("Name: ").append(item.getName())
+                    .append("\nBarcode: ").append(item.getBarcode())
+                    .append("\nExpiry Date: ").append(item.getExpiryDate())
+                    .append("\n\n");
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Expiring Items")
+                .setMessage(message.toString())
+                .setPositiveButton("OK", (dialog, which) -> {
+                    badgeDrawable.setVisible(false); // Clear the badge after reading the message
+                })
+                .show();
     }
 
     // Permission result callback

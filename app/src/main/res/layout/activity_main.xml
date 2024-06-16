@@ -180,7 +180,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_margin="16dp"
-        android:src="@drawable/qr_scan_picture"
+        android:src="@drawable/ic_notification"
+        android:scaleType="centerInside"
+        app:maxImageSize="56dp"
         app:backgroundTint="@color/purple_300"
         app:tint="@android:color/white" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
