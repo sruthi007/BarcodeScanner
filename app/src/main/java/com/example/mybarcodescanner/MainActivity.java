@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.mybarcodescanner.databinding.ActivityMainBinding;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -232,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         itemAdapter.notifyDataSetChanged();
-                        updateNotificationBadge(); // Update the notification badge
                     } else {
                         Log.e(TAG, "Error getting items: ", task.getException());
                         Toast.makeText(this, "Error getting items", Toast.LENGTH_SHORT).show();
@@ -286,6 +284,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(message.toString())
                 .setPositiveButton("OK", (dialog, which) -> {
                     badgeDrawable.setVisible(false); // Clear the badge after reading the message
+                    expiringItems.clear(); // Clear the list to avoid re-triggering the badge
                 })
                 .show();
     }
