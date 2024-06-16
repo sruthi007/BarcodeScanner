@@ -46,12 +46,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         LocalDate today = LocalDate.now();
 
         GradientDrawable background = (GradientDrawable) holder.textName.getBackground();
-        if (expiryDate.isAfter(today.plusDays(7))) {
-            background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.green));
-        } else if (expiryDate.isAfter(today.plusDays(2))) {
+        if (expiryDate.isBefore(today)) {
+            background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.red));
+        } else if (expiryDate.isBefore(today.plusDays(7))) {
             background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.orange));
         } else {
-            background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.red));
+            background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.green));
         }
 
         holder.itemView.setOnClickListener(v -> showItemDetails(v.getContext(), item));

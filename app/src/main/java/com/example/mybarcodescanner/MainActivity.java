@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private LocalDate mfdDate;
     private LocalDate expiryDate;
     private BadgeDrawable badgeDrawable;
-    private List<Item> expiringItems = new ArrayList<>();
+    private List<Item> expiredItems = new ArrayList<>();
     private String currentFilter = "All";
 
     // ActivityResultLauncher for requesting camera permission
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Set up the Floating Action Button
-        binding.fab.setOnClickListener(v -> showExpiringItemsDialog());
+        binding.fab.setOnClickListener(v -> showExpiredItemsDialog());
 
         // Initialize badge drawable
         badgeDrawable = BadgeDrawable.create(this);
@@ -292,21 +292,21 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        expiringItems.clear();
-                        int expiryCount = 0;
+                        expiredItems.clear();
+                        int expiredCount = 0;
                         LocalDate today = LocalDate.now();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Item item = document.toObject(Item.class);
                             if (item != null && item.getExpiryDate() != null) {
                                 LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
-                                if (expiryDate.isBefore(today) || expiryDate.equals(today) || expiryDate.isBefore(today.plusDays(7))) {
-                                    expiringItems.add(item);
-                                    expiryCount++;
+                                if (expiryDate.isBefore(today) || expiryDate.equals(today)) {
+                                    expiredItems.add(item);
+                                    expiredCount++;
                                 }
                             }
                         }
-                        if (expiryCount > 0) {
-                            badgeDrawable.setNumber(expiryCount);
+                        if (expiredCount > 0) {
+                            badgeDrawable.setNumber(expiredCount);
                             badgeDrawable.setVisible(true);
                         } else {
                             badgeDrawable.setVisible(false);
@@ -315,14 +315,14 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void showExpiringItemsDialog() {
-        if (expiringItems.isEmpty()) {
-            Toast.makeText(this, "No items expiring soon.", Toast.LENGTH_SHORT).show();
+    private void showExpiredItemsDialog() {
+        if (expiredItems.isEmpty()) {
+            Toast.makeText(this, "No expired items.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         StringBuilder message = new StringBuilder();
-        for (Item item : expiringItems) {
+        for (Item item : expiredItems) {
             message.append("Name: ").append(item.getName())
                     .append("\nBarcode: ").append(item.getBarcode())
                     .append("\nExpiry Date: ").append(item.getExpiryDate())
@@ -330,11 +330,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Expiring Items")
+                .setTitle("Expired Items")
                 .setMessage(message.toString())
                 .setPositiveButton("OK", (dialog, which) -> {
                     badgeDrawable.setVisible(false); // Clear the badge after reading the message
-                    expiringItems.clear(); // Clear the list to avoid re-triggering the badge
+                    expiredItems.clear(); // Clear the list to avoid re-triggering the badge
                 })
                 .show();
     }
