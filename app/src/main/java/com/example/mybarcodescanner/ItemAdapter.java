@@ -2,17 +2,19 @@ package com.example.mybarcodescanner;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -21,9 +23,11 @@ import java.util.List;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
     private List<Item> items;
+    private FirebaseFirestore db;
 
     public ItemAdapter(List<Item> items) {
         this.items = items;
+        this.db = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -44,6 +48,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         GradientDrawable background = (GradientDrawable) holder.textName.getBackground();
         if (expiryDate.isAfter(today.plusDays(7))) {
             background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.green));
+        } else if (expiryDate.isAfter(today.plusDays(2))) {
+            background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.orange));
         } else {
             background.setColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.red));
         }
@@ -68,11 +74,36 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         mfdDateInput.setText(item.getMfdDate());
         expiryDateInput.setText(item.getExpiryDate());
 
-        new AlertDialog.Builder(context)
+        AlertDialog dialog = new AlertDialog.Builder(context)
                 .setTitle("Item Details")
                 .setView(dialogView)
                 .setPositiveButton("OK", null)
+                .setNegativeButton("Delete", (d, which) -> {
+                    deleteItem(context, item.getBarcode());
+                })
                 .show();
+    }
+
+    private void deleteItem(Context context, String barcode) {
+        db.collection("items").document(barcode).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show();
+                    removeItemFromList(barcode);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(context, "Error deleting item", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void removeItemFromList(String barcode) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getBarcode().equals(barcode)) {
+                items.remove(i);
+                notifyItemRemoved(i);
+                notifyItemRangeChanged(i, items.size());
+                break;
+            }
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
