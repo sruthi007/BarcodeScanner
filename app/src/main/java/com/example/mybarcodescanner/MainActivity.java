@@ -3,6 +3,7 @@ package com.example.mybarcodescanner;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,7 +11,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private LocalDate mfdDate;
     private LocalDate expiryDate;
     private BadgeDrawable badgeDrawable;
-    private List<Item> expiredItems = new ArrayList<>();
+    private List<Item> expiringItems = new ArrayList<>();
     private String currentFilter = "All";
 
     // ActivityResultLauncher for requesting camera permission
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Set up the Floating Action Button
-        binding.fab.setOnClickListener(v -> showExpiredItemsDialog());
+        binding.fab.setOnClickListener(v -> showExpiringItemsDialog());
 
         // Initialize badge drawable
         badgeDrawable = BadgeDrawable.create(this);
@@ -162,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleBarcodeScan(String contents) {
+        Log.d(TAG, "Barcode scanned: " + contents);
         if ("add".equals(currentAction)) {
             promptForItemDetails(contents);
         } else if ("delete".equals(currentAction)) {
@@ -186,16 +188,25 @@ public class MainActivity extends AppCompatActivity {
             expiryDateInput.setText(date.toString());
         }));
 
-        // Show a dialog to get these details
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Enter Item Details")
                 .setView(dialogView)
-                .setPositiveButton("Add", (dialog, which) -> {
+                .setPositiveButton("Add", (dialogInterface, which) -> {
                     String itemName = itemNameInput.getText().toString();
                     addItem(barcode, itemName, mfdDate.toString(), expiryDate.toString());
                 })
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            itemNameInput.setEnabled(true); // Enable the EditText
+            mfdDateInput.setEnabled(true);  // Enable the EditText
+            expiryDateInput.setEnabled(true);  // Enable the EditText
+            itemNameInput.requestFocus();
+            showKeyboard(itemNameInput);
+        });
+
+        dialog.show();
     }
 
     private void showDatePickerDialog(OnDateSetListener listener) {
@@ -261,9 +272,9 @@ public class MainActivity extends AppCompatActivity {
                                 LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
                                 boolean matchesFilter = false;
 
-                                if (filterExpired && (expiryDate.isBefore(today) || expiryDate.equals(today))) {
+                                if (filterExpired && expiryDate.isBefore(today)) {
                                     matchesFilter = true;
-                                } else if (filterExpiringSoon && (expiryDate.isAfter(today) && expiryDate.isBefore(today.plusDays(7)))) {
+                                } else if (filterExpiringSoon && (expiryDate.isEqual(today) || expiryDate.isAfter(today) && expiryDate.isBefore(today.plusDays(7)))) {
                                     matchesFilter = true;
                                 } else if (filterValid && expiryDate.isAfter(today.plusDays(7))) {
                                     matchesFilter = true;
@@ -292,21 +303,21 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        expiredItems.clear();
-                        int expiredCount = 0;
+                        expiringItems.clear();
+                        int expiryCount = 0;
                         LocalDate today = LocalDate.now();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Item item = document.toObject(Item.class);
                             if (item != null && item.getExpiryDate() != null) {
                                 LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
-                                if (expiryDate.isBefore(today) || expiryDate.equals(today)) {
-                                    expiredItems.add(item);
-                                    expiredCount++;
+                                if (expiryDate.isBefore(today)) {
+                                    expiringItems.add(item);
+                                    expiryCount++;
                                 }
                             }
                         }
-                        if (expiredCount > 0) {
-                            badgeDrawable.setNumber(expiredCount);
+                        if (expiryCount > 0) {
+                            badgeDrawable.setNumber(expiryCount);
                             badgeDrawable.setVisible(true);
                         } else {
                             badgeDrawable.setVisible(false);
@@ -315,14 +326,14 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void showExpiredItemsDialog() {
-        if (expiredItems.isEmpty()) {
-            Toast.makeText(this, "No expired items.", Toast.LENGTH_SHORT).show();
+    private void showExpiringItemsDialog() {
+        if (expiringItems.isEmpty()) {
+            Toast.makeText(this, "No New Notifications.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         StringBuilder message = new StringBuilder();
-        for (Item item : expiredItems) {
+        for (Item item : expiringItems) {
             message.append("Name: ").append(item.getName())
                     .append("\nBarcode: ").append(item.getBarcode())
                     .append("\nExpiry Date: ").append(item.getExpiryDate())
@@ -334,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage(message.toString())
                 .setPositiveButton("OK", (dialog, which) -> {
                     badgeDrawable.setVisible(false); // Clear the badge after reading the message
-                    expiredItems.clear(); // Clear the list to avoid re-triggering the badge
+                    expiringItems.clear(); // Clear the list to avoid re-triggering the badge
                 })
                 .show();
     }
@@ -379,6 +390,13 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Otherwise, call the superclass method to handle the default back press
             super.onBackPressed();
+        }
+    }
+
+    private void showKeyboard(View view) {
+        if (view.requestFocus()) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         }
     }
 
