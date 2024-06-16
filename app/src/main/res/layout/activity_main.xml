@@ -153,6 +153,62 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Filter Layout -->
+        <LinearLayout
+            android:id="@+id/layoutFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search"
+                android:padding="12dp"
+                android:background="@drawable/search_bar_background"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="8dp"
+                android:textColor="@android:color/white"
+                android:textColorHint="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp">
+
+                <CheckBox
+                    android:id="@+id/checkBoxExpired"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Expired"
+                    android:textColor="@android:color/white"
+                    android:buttonTint="@color/red"/>
+
+                <CheckBox
+                    android:id="@+id/checkBoxExpiringSoon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Expiring Soon"
+                    android:textColor="@android:color/white"
+                    android:buttonTint="@color/orange"
+                    android:layout_marginStart="16dp"/>
+
+                <CheckBox
+                    android:id="@+id/checkBoxValid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Valid"
+                    android:textColor="@android:color/white"
+                    android:buttonTint="@color/green"
+                    android:layout_marginStart="16dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"

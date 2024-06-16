@@ -6,8 +6,11 @@ import android.app.DatePickerDialog;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -45,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private LocalDate expiryDate;
     private BadgeDrawable badgeDrawable;
     private List<Item> expiringItems = new ArrayList<>();
+    private String currentFilter = "All";
 
     // ActivityResultLauncher for requesting camera permission
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -73,7 +77,10 @@ public class MainActivity extends AppCompatActivity {
             checkPermissionAndActivity();
         });
 
-        binding.btnShowItems.setOnClickListener(v -> loadItems());
+        binding.btnShowItems.setOnClickListener(v -> {
+            showFilterLayout(true);
+            loadItems();
+        });
 
         // Set up the Floating Action Button
         binding.fab.setOnClickListener(v -> showExpiringItemsDialog());
@@ -89,6 +96,25 @@ public class MainActivity extends AppCompatActivity {
 
         // Update the notification badge
         updateNotificationBadge();
+
+        // Handle filter actions
+        binding.checkBoxExpired.setOnClickListener(v -> loadItems());
+        binding.checkBoxExpiringSoon.setOnClickListener(v -> loadItems());
+        binding.checkBoxValid.setOnClickListener(v -> loadItems());
+
+        // Search bar filter
+        binding.searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                loadItems();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void initBinding() {
@@ -214,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
         binding.layoutAddItem.setVisibility(View.GONE);
         binding.layoutDeleteItem.setVisibility(View.GONE);
         binding.layoutShowItems.setVisibility(View.GONE);
+        binding.layoutFilter.setVisibility(View.VISIBLE);
 
         binding.recyclerView.setVisibility(View.VISIBLE);
         binding.layoutResult.setVisibility(View.GONE);
@@ -222,10 +249,33 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         itemList.clear();
+                        LocalDate today = LocalDate.now();
+                        String searchText = binding.searchBar.getText().toString().toLowerCase();
+                        boolean filterExpired = binding.checkBoxExpired.isChecked();
+                        boolean filterExpiringSoon = binding.checkBoxExpiringSoon.isChecked();
+                        boolean filterValid = binding.checkBoxValid.isChecked();
+
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Item item = document.toObject(Item.class);
                             if (item != null && item.getBarcode() != null) {
-                                itemList.add(item);
+                                LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
+                                boolean matchesFilter = false;
+
+                                if (filterExpired && (expiryDate.isBefore(today) || expiryDate.equals(today))) {
+                                    matchesFilter = true;
+                                } else if (filterExpiringSoon && (expiryDate.isAfter(today) && expiryDate.isBefore(today.plusDays(7)))) {
+                                    matchesFilter = true;
+                                } else if (filterValid && expiryDate.isAfter(today.plusDays(7))) {
+                                    matchesFilter = true;
+                                }
+
+                                if (!filterExpired && !filterExpiringSoon && !filterValid) {
+                                    matchesFilter = true;
+                                }
+
+                                if (matchesFilter && (item.getName().toLowerCase().contains(searchText) || item.getBarcode().toLowerCase().contains(searchText))) {
+                                    itemList.add(item);
+                                }
                             } else {
                                 Log.w(TAG, "Retrieved null or invalid item from Firestore");
                             }
@@ -289,6 +339,10 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showFilterLayout(boolean show) {
+        binding.layoutFilter.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     // Permission result callback
     private void onPermissionResult(boolean isGranted) {
         if (isGranted) {
@@ -319,6 +373,9 @@ public class MainActivity extends AppCompatActivity {
             binding.layoutAddItem.setVisibility(View.VISIBLE);
             binding.layoutDeleteItem.setVisibility(View.VISIBLE);
             binding.layoutShowItems.setVisibility(View.VISIBLE);
+
+            // Hide the filter layout
+            showFilterLayout(false);
         } else {
             // Otherwise, call the superclass method to handle the default back press
             super.onBackPressed();
