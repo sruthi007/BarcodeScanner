@@ -42,7 +42,7 @@ cd BarCodeScanner
 
 ### Build and Run the Application
 
-To install an APK file on your Android device, follow these steps:
+To install an APK file(UScan.apk) on your Android device, follow these steps:
 
 #### For Android Devices:
 
@@ -54,13 +54,13 @@ To install an APK file on your Android device, follow these steps:
 
 2. **Transfer the APK File to Your Device:**
    - Connect your device to your computer using a USB cable.
-   - Transfer the APK file to a location on your device’s internal storage or SD card where you can easily find it (e.g., the Downloads folder).
+   - Transfer the APK file from the cloned repo(UScan.apk) to a location on your device’s internal storage or SD card where you can easily find it (e.g., the Downloads folder).
 
 3. **Locate the APK File:**
    - On your device, use a file manager app to navigate to the location where you saved the APK file.
 
 4. **Install the APK:**
-   - Tap on the APK file.
+   - Tap on the APK file(UScan.apk).
    - You will be prompted to confirm the installation. Tap `Install`.
 
 5. **Complete the Installation:**
@@ -72,7 +72,7 @@ To install an APK file on your Android device, follow these steps:
    - Launch the Android Emulator from Android Studio.
 
 2. **Drag and Drop the APK:**
-   - Drag the APK file from your computer and drop it onto the emulator screen.
+   - Drag the APK file(UScan.apk) from your computer and drop it onto the emulator screen.
 
 3. **Install the APK:**
    - The emulator will automatically detect the APK file and begin the installation process.
