@@ -5,28 +5,75 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <TextView
+        android:id="@+id/textViewBarcode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Barcode"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/textViewItemNameLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Item Name"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:paddingBottom="4dp" />
+
     <EditText
         android:id="@+id/editTextItemName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Item Name"
-        android:inputType="text" />
+        android:inputType="text"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:textColor="@color/black"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textViewMfdDateLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MFD Date"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
 
     <EditText
         android:id="@+id/editTextMfdDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="MFD Date"
-        android:focusable="false"
-        android:inputType="none"
-        android:paddingTop="8dp" />
+        android:inputType="text"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:textColor="@color/black"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textViewExpiryDateLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="EXP Date"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
 
     <EditText
         android:id="@+id/editTextExpiryDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Expiry Date"
-        android:focusable="false"
-        android:inputType="none"
-        android:paddingTop="8dp" />
+        android:inputType="text"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:textColor="@color/black"
+        android:textStyle="bold" />
 </LinearLayout>

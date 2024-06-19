@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     tools:context=".MainActivity">
 
     <!-- App Bar Layout with Toolbar -->
@@ -17,9 +18,9 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@color/darkpink"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:title="Barcode Scanner"/>
+            app:title="UScan"/>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Main Content Layout -->
@@ -28,23 +29,24 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
-        android:layout_marginTop="?attr/actionBarSize">
+        android:gravity="center_horizontal">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/layout_result"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical"
-            tools:ignore="MissingConstraints"
-            tools:layout_editor_absoluteX="179dp"
-            tools:layout_editor_absoluteY="290dp">
+            tools:ignore="MissingConstraints">
 
             <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="150dp"
+                android:layout_height="450dp"
                 android:src="@drawable/qr_scan_picture"
+                android:backgroundTint="@color/purple_300"
+                android:layout_gravity="bottom|center"
+                android:layout_margin="16dp"
+                app:tint="@android:color/white"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -54,17 +56,166 @@
                 android:layout_marginTop="16dp"
                 android:textSize="26sp"
                 android:textStyle="bold"
+                android:textColor="@color/white"
                 tools:ignore="HardcodedText" />
-
         </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <!-- Action Buttons Layout -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp">
+
+            <!-- Add Item Button with Text -->
+            <LinearLayout
+                android:id="@+id/layoutAddItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="8dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_add"
+                    android:backgroundTint="@color/purple_300"
+                    app:iconTint="@android:color/white"
+                    app:iconGravity="start"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ADD"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <!-- Delete Item Button with Text -->
+            <LinearLayout
+                android:id="@+id/layoutDeleteItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="8dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDeleteItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_delete"
+                    android:backgroundTint="@color/purple_300"
+                    app:iconTint="@android:color/white"
+                    app:iconGravity="start"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DELETE"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+            <!-- Show Items Button with Text -->
+            <LinearLayout
+                android:id="@+id/layoutShowItems"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_margin="8dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnShowItems"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_show"
+                    android:backgroundTint="@color/purple_300"
+                    app:iconTint="@android:color/white"
+                    app:iconGravity="start"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SHOW"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Filter Layout -->
+        <LinearLayout
+            android:id="@+id/layoutFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search"
+                android:padding="12dp"
+                android:background="@drawable/search_bar_background"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="8dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginTop="16dp">
+
+                <CheckBox
+                    android:id="@+id/checkBoxExpired"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Expired"
+                    android:textColor="@android:color/white"
+                    android:buttonTint="@color/red"/>
+
+                <CheckBox
+                    android:id="@+id/checkBoxExpiringSoon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Expiring Soon"
+                    android:textColor="@android:color/white"
+                    android:buttonTint="@color/orange"
+                    android:layout_marginStart="16dp"/>
+
+                <CheckBox
+                    android:id="@+id/checkBoxValid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Valid"
+                    android:textColor="@android:color/white"
+                    android:buttonTint="@color/green"
+                    android:layout_marginStart="16dp"/>
+            </LinearLayout>
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            tools:listitem="@layout/item_view" />
-
+            android:paddingTop="16dp"
+            tools:listitem="@layout/item_card_view" />
     </LinearLayout>
 
     <!-- Bottom App Bar -->
@@ -73,7 +224,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:backgroundTint="@color/purple_200"
+        android:backgroundTint="@color/darkpink"
         app:fabCradleMargin="10dp"
         app:fabCradleRoundedCornerRadius="10dp"
         app:fabCradleVerticalOffset="10dp" />
@@ -85,7 +236,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
         android:layout_margin="16dp"
-        android:src="@drawable/qr_scan_picture"
-        app:backgroundTint="@color/purple_200"
+        android:src="@drawable/ic_notification"
+        android:scaleType="centerInside"
+        app:maxImageSize="56dp"
+        app:backgroundTint="@color/purple_300"
         app:tint="@android:color/white" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

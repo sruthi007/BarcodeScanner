@@ -3,25 +3,29 @@ package com.example.mybarcodescanner;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mybarcodescanner.databinding.ActivityMainBinding;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.BadgeUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -43,6 +47,9 @@ public class MainActivity extends AppCompatActivity {
     private ItemAdapter itemAdapter;
     private LocalDate mfdDate;
     private LocalDate expiryDate;
+    private BadgeDrawable badgeDrawable;
+    private List<Item> expiringItems = new ArrayList<>();
+    private String currentFilter = "All";
 
     // ActivityResultLauncher for requesting camera permission
     private final ActivityResultLauncher<String> requestPermissionLauncher =
@@ -59,6 +66,56 @@ public class MainActivity extends AppCompatActivity {
         initViews();
         initFirestore();
         initRecyclerView();
+
+        // Handle button clicks
+        binding.btnAddItem.setOnClickListener(v -> {
+            currentAction = "add";
+            checkPermissionAndActivity();
+        });
+
+        binding.btnDeleteItem.setOnClickListener(v -> {
+            currentAction = "delete";
+            checkPermissionAndActivity();
+        });
+
+        binding.btnShowItems.setOnClickListener(v -> {
+            showFilterLayout(true);
+            loadItems();
+        });
+
+        // Set up the Floating Action Button
+        binding.fab.setOnClickListener(v -> showExpiringItemsDialog());
+
+        // Initialize badge drawable
+        badgeDrawable = BadgeDrawable.create(this);
+        badgeDrawable.setBadgeGravity(BadgeDrawable.TOP_END);
+        badgeDrawable.setMaxCharacterCount(3); // Adjust as needed for larger numbers
+        badgeDrawable.setHorizontalOffset(20);
+        badgeDrawable.setVerticalOffset(20);
+        badgeDrawable.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
+        binding.fab.post(() -> BadgeUtils.attachBadgeDrawable(badgeDrawable, binding.fab));
+
+        // Update the notification badge
+        updateNotificationBadge();
+
+        // Handle filter actions
+        binding.checkBoxExpired.setOnClickListener(v -> loadItems());
+        binding.checkBoxExpiringSoon.setOnClickListener(v -> loadItems());
+        binding.checkBoxValid.setOnClickListener(v -> loadItems());
+
+        // Search bar filter
+        binding.searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                loadItems();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void initBinding() {
@@ -67,7 +124,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        binding.fab.setOnClickListener(this::showPopupMenu);
+        // You can remove the FAB if not needed
+        binding.fab.setOnClickListener(v -> showCamera());
     }
 
     private void initFirestore() {
@@ -79,31 +137,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         itemAdapter = new ItemAdapter(itemList);
         recyclerView.setAdapter(itemAdapter);
-    }
-
-    private void showPopupMenu(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        MenuInflater inflater = popup.getMenuInflater();
-        inflater.inflate(R.menu.menu_main, popup.getMenu());
-        popup.setOnMenuItemClickListener(this::onMenuItemClick);
-        popup.show();
-    }
-
-    private boolean onMenuItemClick(MenuItem item) {
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_add) {
-            currentAction = "add";
-            checkPermissionAndActivity();
-            return true;
-        } else if (itemId == R.id.action_delete) {
-            currentAction = "delete";
-            checkPermissionAndActivity();
-            return true;
-        } else if (itemId == R.id.action_show) {
-            loadItems();
-            return true;
-        }
-        return false;
     }
 
     private void checkPermissionAndActivity() {
@@ -130,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleBarcodeScan(String contents) {
+        Log.d(TAG, "Barcode scanned: " + contents);
         if ("add".equals(currentAction)) {
             promptForItemDetails(contents);
         } else if ("delete".equals(currentAction)) {
@@ -154,16 +188,25 @@ public class MainActivity extends AppCompatActivity {
             expiryDateInput.setText(date.toString());
         }));
 
-        // Show a dialog to get these details
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Enter Item Details")
                 .setView(dialogView)
-                .setPositiveButton("Add", (dialog, which) -> {
+                .setPositiveButton("Add", (dialogInterface, which) -> {
                     String itemName = itemNameInput.getText().toString();
                     addItem(barcode, itemName, mfdDate.toString(), expiryDate.toString());
                 })
                 .setNegativeButton("Cancel", null)
-                .show();
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            itemNameInput.setEnabled(true); // Enable the EditText
+            mfdDateInput.setEnabled(true);  // Enable the EditText
+            expiryDateInput.setEnabled(true);  // Enable the EditText
+            itemNameInput.requestFocus();
+            showKeyboard(itemNameInput);
+        });
+
+        dialog.show();
     }
 
     private void showDatePickerDialog(OnDateSetListener listener) {
@@ -183,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").document(barcode).set(newItem)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Item added", Toast.LENGTH_SHORT).show();
+                    updateNotificationBadge(); // Update the notification badge
                     loadItems(); // Optionally refresh the list immediately after adding an item
                 })
                 .addOnFailureListener(e -> {
@@ -194,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").document(barcode).delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show();
+                    updateNotificationBadge(); // Update the notification badge
                     loadItems(); // Optionally refresh the list immediately after deleting an item
                 })
                 .addOnFailureListener(e -> {
@@ -202,6 +247,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadItems() {
+        // Hide action buttons and text when showing items
+        binding.layoutAddItem.setVisibility(View.GONE);
+        binding.layoutDeleteItem.setVisibility(View.GONE);
+        binding.layoutShowItems.setVisibility(View.GONE);
+        binding.layoutFilter.setVisibility(View.VISIBLE);
+
         binding.recyclerView.setVisibility(View.VISIBLE);
         binding.layoutResult.setVisibility(View.GONE);
 
@@ -209,10 +260,33 @@ public class MainActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         itemList.clear();
+                        LocalDate today = LocalDate.now();
+                        String searchText = binding.searchBar.getText().toString().toLowerCase();
+                        boolean filterExpired = binding.checkBoxExpired.isChecked();
+                        boolean filterExpiringSoon = binding.checkBoxExpiringSoon.isChecked();
+                        boolean filterValid = binding.checkBoxValid.isChecked();
+
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Item item = document.toObject(Item.class);
                             if (item != null && item.getBarcode() != null) {
-                                itemList.add(item);
+                                LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
+                                boolean matchesFilter = false;
+
+                                if (filterExpired && expiryDate.isBefore(today)) {
+                                    matchesFilter = true;
+                                } else if (filterExpiringSoon && (expiryDate.isEqual(today) || expiryDate.isAfter(today) && expiryDate.isBefore(today.plusDays(7)))) {
+                                    matchesFilter = true;
+                                } else if (filterValid && expiryDate.isAfter(today.plusDays(7))) {
+                                    matchesFilter = true;
+                                }
+
+                                if (!filterExpired && !filterExpiringSoon && !filterValid) {
+                                    matchesFilter = true;
+                                }
+
+                                if (matchesFilter && (item.getName().toLowerCase().contains(searchText) || item.getBarcode().toLowerCase().contains(searchText))) {
+                                    itemList.add(item);
+                                }
                             } else {
                                 Log.w(TAG, "Retrieved null or invalid item from Firestore");
                             }
@@ -223,6 +297,61 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(this, "Error getting items", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void updateNotificationBadge() {
+        db.collection("items").get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        expiringItems.clear();
+                        int expiryCount = 0;
+                        LocalDate today = LocalDate.now();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Item item = document.toObject(Item.class);
+                            if (item != null && item.getExpiryDate() != null) {
+                                LocalDate expiryDate = LocalDate.parse(item.getExpiryDate());
+                                if (expiryDate.isBefore(today)) {
+                                    expiringItems.add(item);
+                                    expiryCount++;
+                                }
+                            }
+                        }
+                        if (expiryCount > 0) {
+                            badgeDrawable.setNumber(expiryCount);
+                            badgeDrawable.setVisible(true);
+                        } else {
+                            badgeDrawable.setVisible(false);
+                        }
+                    }
+                });
+    }
+
+    private void showExpiringItemsDialog() {
+        if (expiringItems.isEmpty()) {
+            Toast.makeText(this, "No New Notifications.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        StringBuilder message = new StringBuilder();
+        for (Item item : expiringItems) {
+            message.append("Name: ").append(item.getName())
+                    .append("\nBarcode: ").append(item.getBarcode())
+                    .append("\nExpiry Date: ").append(item.getExpiryDate())
+                    .append("\n\n");
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Expired Items")
+                .setMessage(message.toString())
+                .setPositiveButton("OK", (dialog, which) -> {
+                    badgeDrawable.setVisible(false); // Clear the badge after reading the message
+                    expiringItems.clear(); // Clear the list to avoid re-triggering the badge
+                })
+                .show();
+    }
+
+    private void showFilterLayout(boolean show) {
+        binding.layoutFilter.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     // Permission result callback
@@ -250,9 +379,24 @@ public class MainActivity extends AppCompatActivity {
             // If the RecyclerView is visible, return to the home screen (initial state)
             binding.recyclerView.setVisibility(View.GONE);
             binding.layoutResult.setVisibility(View.VISIBLE);
+
+            // Show action buttons and text again
+            binding.layoutAddItem.setVisibility(View.VISIBLE);
+            binding.layoutDeleteItem.setVisibility(View.VISIBLE);
+            binding.layoutShowItems.setVisibility(View.VISIBLE);
+
+            // Hide the filter layout
+            showFilterLayout(false);
         } else {
             // Otherwise, call the superclass method to handle the default back press
             super.onBackPressed();
+        }
+    }
+
+    private void showKeyboard(View view) {
+        if (view.requestFocus()) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
         }
     }
 

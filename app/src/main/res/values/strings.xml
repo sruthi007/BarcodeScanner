@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MyBarCodeScanner</string>
+    <string name="app_name">UScan</string>
     <string name="hello">hello</string>
     <string name="add_item">Add Item</string>
     <string name="delete_item">Delete Item</string>
