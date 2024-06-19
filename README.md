@@ -11,7 +11,7 @@ UScan is an Android application that allows users to scan barcodes using their d
 - Show a notification badge for items that have expired.
 - Search functionality to quickly find items by name or barcode.
 
-![App UI](.images/app_page1.png){width=80%}
+<img src=".images/app_page1.png" alt="App UI" style="width:30%;">  <img src=".images/app_page2.png" alt="App UI" style="width:29%;">  <img src=".images/app_page3.png" alt="App UI" style="width:28%;">
 
 ## Prerequisites
 
