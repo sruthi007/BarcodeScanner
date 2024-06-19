@@ -8,7 +8,6 @@
     android:background="@color/black"
     tools:context=".MainActivity">
 
-    <!-- App Bar Layout with Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,7 +22,6 @@
             app:title="UScan"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Main Content Layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -60,7 +58,6 @@
                 tools:ignore="HardcodedText" />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <!-- Action Buttons Layout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,7 +65,6 @@
             android:gravity="center"
             android:layout_marginTop="24dp">
 
-            <!-- Add Item Button with Text -->
             <LinearLayout
                 android:id="@+id/layoutAddItem"
                 android:layout_width="wrap_content"
@@ -96,7 +92,6 @@
                     android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- Delete Item Button with Text -->
             <LinearLayout
                 android:id="@+id/layoutDeleteItem"
                 android:layout_width="wrap_content"
@@ -124,7 +119,6 @@
                     android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- Show Items Button with Text -->
             <LinearLayout
                 android:id="@+id/layoutShowItems"
                 android:layout_width="wrap_content"
@@ -153,7 +147,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Filter Layout -->
         <LinearLayout
             android:id="@+id/layoutFilter"
             android:layout_width="match_parent"
@@ -218,7 +211,6 @@
             tools:listitem="@layout/item_card_view" />
     </LinearLayout>
 
-    <!-- Bottom App Bar -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
@@ -229,7 +221,6 @@
         app:fabCradleRoundedCornerRadius="10dp"
         app:fabCradleVerticalOffset="10dp" />
 
-    <!-- Floating Action Button for showing menu options -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"

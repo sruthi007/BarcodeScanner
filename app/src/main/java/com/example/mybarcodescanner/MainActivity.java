@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -22,7 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.mybarcodescanner.databinding.ActivityMainBinding;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.BadgeUtils;
@@ -31,7 +29,6 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.journeyapps.barcodescanner.ScanIntentResult;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -67,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
         initFirestore();
         initRecyclerView();
 
-        // Handle button clicks
         binding.btnAddItem.setOnClickListener(v -> {
             currentAction = "add";
             checkPermissionAndActivity();
@@ -83,13 +79,12 @@ public class MainActivity extends AppCompatActivity {
             loadItems();
         });
 
-        // Set up the Floating Action Button
+        
         binding.fab.setOnClickListener(v -> showExpiringItemsDialog());
 
-        // Initialize badge drawable
         badgeDrawable = BadgeDrawable.create(this);
         badgeDrawable.setBadgeGravity(BadgeDrawable.TOP_END);
-        badgeDrawable.setMaxCharacterCount(3); // Adjust as needed for larger numbers
+        badgeDrawable.setMaxCharacterCount(3); 
         badgeDrawable.setHorizontalOffset(20);
         badgeDrawable.setVerticalOffset(20);
         badgeDrawable.setBackgroundColor(ContextCompat.getColor(this, R.color.red));
@@ -124,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        // You can remove the FAB if not needed
         binding.fab.setOnClickListener(v -> showCamera());
     }
 
@@ -172,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void promptForItemDetails(String barcode) {
-        // Inflate a custom layout that includes EditText for item name and DatePickers for dates
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_item_details, null);
         EditText itemNameInput = dialogView.findViewById(R.id.editTextItemName);
         EditText mfdDateInput = dialogView.findViewById(R.id.editTextMfdDate);
@@ -199,9 +192,9 @@ public class MainActivity extends AppCompatActivity {
                 .create();
 
         dialog.setOnShowListener(dialogInterface -> {
-            itemNameInput.setEnabled(true); // Enable the EditText
-            mfdDateInput.setEnabled(true);  // Enable the EditText
-            expiryDateInput.setEnabled(true);  // Enable the EditText
+            itemNameInput.setEnabled(true); 
+            mfdDateInput.setEnabled(true);  
+            expiryDateInput.setEnabled(true);  
             itemNameInput.requestFocus();
             showKeyboard(itemNameInput);
         });
@@ -226,8 +219,8 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").document(barcode).set(newItem)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Item added", Toast.LENGTH_SHORT).show();
-                    updateNotificationBadge(); // Update the notification badge
-                    loadItems(); // Optionally refresh the list immediately after adding an item
+                    updateNotificationBadge(); 
+                    loadItems(); 
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error adding item", Toast.LENGTH_SHORT).show();
@@ -238,8 +231,8 @@ public class MainActivity extends AppCompatActivity {
         db.collection("items").document(barcode).delete()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show();
-                    updateNotificationBadge(); // Update the notification badge
-                    loadItems(); // Optionally refresh the list immediately after deleting an item
+                    updateNotificationBadge(); 
+                    loadItems(); 
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error deleting item", Toast.LENGTH_SHORT).show();
@@ -344,8 +337,8 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Expired Items")
                 .setMessage(message.toString())
                 .setPositiveButton("OK", (dialog, which) -> {
-                    badgeDrawable.setVisible(false); // Clear the badge after reading the message
-                    expiringItems.clear(); // Clear the list to avoid re-triggering the badge
+                    badgeDrawable.setVisible(false); 
+                    expiringItems.clear();
                 })
                 .show();
     }
@@ -354,7 +347,6 @@ public class MainActivity extends AppCompatActivity {
         binding.layoutFilter.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-    // Permission result callback
     private void onPermissionResult(boolean isGranted) {
         if (isGranted) {
             showCamera();
@@ -363,7 +355,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Scan result callback
     private void onScanResult(ScanIntentResult result) {
         if (result.getContents() == null) {
             Toast.makeText(this, "Closed", Toast.LENGTH_SHORT).show();
@@ -376,19 +367,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (binding.recyclerView.getVisibility() == View.VISIBLE) {
-            // If the RecyclerView is visible, return to the home screen (initial state)
+
             binding.recyclerView.setVisibility(View.GONE);
             binding.layoutResult.setVisibility(View.VISIBLE);
-
-            // Show action buttons and text again
             binding.layoutAddItem.setVisibility(View.VISIBLE);
             binding.layoutDeleteItem.setVisibility(View.VISIBLE);
             binding.layoutShowItems.setVisibility(View.VISIBLE);
-
-            // Hide the filter layout
             showFilterLayout(false);
         } else {
-            // Otherwise, call the superclass method to handle the default back press
             super.onBackPressed();
         }
     }
@@ -400,7 +386,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Interface for date set listener
     private interface OnDateSetListener {
         void onDateSet(LocalDate date);
     }
