@@ -7,7 +7,6 @@ public class Item {
     private String expiryDate;
 
     public Item() {
-        // Default constructor required for calls to DataSnapshot.getValue(Item.class)
     }
 
     public Item(String barcode, String name, String mfdDate, String expiryDate) {
